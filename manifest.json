@@ -1,7 +1,7 @@
 {
   "name": "Universal API Sniffer",
   "description": "Перехват fetch/XHR/WebSocket/SSE на любых сайтах и экспорт логов.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "manifest_version": 3,
   "permissions": [
     "storage",
