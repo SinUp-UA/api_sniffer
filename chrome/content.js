@@ -31,10 +31,25 @@ window.addEventListener("message", (event) => {
 
   console.log('[API Sniffer Content] Event captured:', data.payload.apiType, data.payload.url);
 
-  browserAPI.runtime.sendMessage({
-    action: "api_log",
-    payload: data.payload
-  }).catch(err => {
-    console.error('[API Sniffer Content] Error sending message:', err);
-  });
+  // Проверка валидности контекста расширения
+  try {
+    if (!browserAPI.runtime?.id) {
+      console.warn('[API Sniffer Content] Extension context invalidated, stopping message forwarding');
+      return;
+    }
+
+    browserAPI.runtime.sendMessage({
+      action: "api_log",
+      payload: data.payload
+    }).catch(err => {
+      // Игнорировать ошибки если контекст инвалидирован
+      if (err.message?.includes('Extension context invalidated')) {
+        console.warn('[API Sniffer Content] Extension context invalidated');
+      } else {
+        console.error('[API Sniffer Content] Error sending message:', err);
+      }
+    });
+  } catch (err) {
+    console.warn('[API Sniffer Content] Cannot access extension context:', err.message);
+  }
 });
