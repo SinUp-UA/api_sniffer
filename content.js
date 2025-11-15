@@ -7,6 +7,12 @@ console.log('[API Sniffer Content] Script loaded on:', window.location.href);
 // Инжектим sniffer.js в страницу, чтобы иметь доступ к window.fetch/XHR/WebSocket/EventSource
 (function injectSniffer() {
   try {
+    // Проверка валидности контекста перед использованием runtime API
+    if (!browserAPI.runtime?.id) {
+      console.warn('[API Sniffer Content] Extension context invalidated, cannot inject sniffer.js');
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = browserAPI.runtime.getURL("sniffer.js");
     script.async = false;
@@ -19,7 +25,12 @@ console.log('[API Sniffer Content] Script loaded on:', window.location.href);
     };
     (document.head || document.documentElement).prepend(script);
   } catch (e) {
-    console.error('[API Sniffer Content] Error injecting sniffer.js:', e);
+    // Тихо игнорировать ошибки контекста расширения
+    if (e.message?.includes('Extension context invalidated')) {
+      console.warn('[API Sniffer Content] Extension context invalidated during injection');
+    } else {
+      console.error('[API Sniffer Content] Error injecting sniffer.js:', e);
+    }
   }
 })();
 

@@ -1,7 +1,7 @@
 {
   "name": "Universal API Sniffer",
   "description": "Перехват fetch/XHR/WebSocket/SSE на любых сайтах и экспорт логов.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "manifest_version": 3,
   "update_url": "https://raw.githubusercontent.com/SinUp-UA/api_sniffer/main/updates.xml",
   "permissions": [
