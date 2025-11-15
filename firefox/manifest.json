@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Universal API Sniffer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Перехват fetch/XHR/WebSocket/SSE на любых сайтах и экспорт логов.",
   "background": {
     "scripts": ["background.js"]

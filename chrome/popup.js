@@ -241,8 +241,14 @@ function displayLogs() {
         return;
     }
     
+    // Сохранить состояния развернутых элементов перед обновлением
+    const expandedIndices = new Set();
+    document.querySelectorAll('.log-item.expanded').forEach(item => {
+        expandedIndices.add(item.dataset.index);
+    });
+    
     logsList.innerHTML = filteredLogs.map((log, index) => `
-        <div class="log-item" data-index="${index}">
+        <div class="log-item ${expandedIndices.has(String(index)) ? 'expanded' : ''}" data-index="${index}">
             <div class="log-header">
                 <span class="log-method method-${log.method || 'GET'}">${log.method || 'GET'}</span>
                 ${log.status ? `<span class="log-status status-${getStatusGroup(log.status)}">${log.status}</span>` : ''}
