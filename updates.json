@@ -3,8 +3,8 @@
     "api-sniffer@universal.extension": {
       "updates": [
         {
-          "version": "1.0.4",
-          "update_link": "https://github.com/SinUp-UA/api_sniffer/releases/download/firefox-v1.0.4/Universal-API-Sniffer-Firefox-v1.0.4.xpi"
+          "version": "1.0.5",
+          "update_link": "https://github.com/SinUp-UA/api_sniffer/releases/download/firefox-v1.0.5/Universal-API-Sniffer-Firefox-v1.0.5.xpi"
         }
       ]
     }
