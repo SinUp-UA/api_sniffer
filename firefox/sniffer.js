@@ -2,8 +2,13 @@
 // Перехват fetch, XHR, WebSocket, SSE (EventSource)
 
 (function () {
-  if (window.__UNIVERSAL_API_SNIFFER_INSTALLED__) return;
+  if (window.__UNIVERSAL_API_SNIFFER_INSTALLED__) {
+    console.log('[API Sniffer] Already installed, skipping');
+    return;
+  }
   window.__UNIVERSAL_API_SNIFFER_INSTALLED__ = true;
+
+  console.log('[API Sniffer] Installing hooks on:', window.location.href);
 
   function nowIso() {
     return new Date().toISOString();
@@ -42,6 +47,7 @@
   }
 
   function postLog(payload) {
+    console.log('[API Sniffer] Posting log:', payload.apiType, payload.url);
     try {
       window.postMessage(
         {
@@ -51,7 +57,7 @@
         "*"
       );
     } catch (e) {
-      // молча
+      console.error('[API Sniffer] Error posting log:', e);
     }
   }
 
@@ -343,4 +349,6 @@
       return es;
     };
   }
+
+  console.log('[API Sniffer] All hooks installed successfully! fetch:', !!window.fetch, 'XMLHttpRequest:', !!window.XMLHttpRequest, 'WebSocket:', !!window.WebSocket, 'EventSource:', !!window.EventSource);
 })();
