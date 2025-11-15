@@ -1,41 +1,227 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>API Sniffer</title>
-  <link rel="stylesheet" href="popup.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Sniffer</title>
+    <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="container">
-    <h1>API Sniffer</h1>
+    <!-- Заголовок -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="title">API Sniffer</h1>
+            <div class="header-controls">
+                <button id="recordBtn" class="btn btn-icon" title="Старт/Стоп записи">
+                    <span class="icon">⏺</span>
+                </button>
+                <button id="pauseBtn" class="btn btn-icon" title="Пауза/Возобновление">
+                    <span class="icon">⏸</span>
+                </button>
+                <button id="clearBtn" class="btn btn-icon" title="Очистить">
+                    <span class="icon">🗑</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Статус -->
+        <div class="status-bar">
+            <span id="recordingStatus" class="status-item">
+                <span class="status-dot status-active"></span>
+                Запись активна
+            </span>
+            <span id="logsCount" class="status-item">Логов: 0</span>
+        </div>
+    </header>
 
-    <div class="status">
-      Статус: <span id="statusLabel">—</span>
+    <!-- Табы -->
+    <nav class="tabs">
+        <button class="tab active" data-tab="logs">
+            <span class="tab-icon">📋</span>
+            <span class="tab-label">Логи</span>
+        </button>
+        <button class="tab" data-tab="stats">
+            <span class="tab-icon">📊</span>
+            <span class="tab-label">Статистика</span>
+        </button>
+        <button class="tab" data-tab="filters">
+            <span class="tab-icon">🔍</span>
+            <span class="tab-label">Фильтры</span>
+        </button>
+    </nav>
+
+    <!-- Контент: вкладка "Логи" -->
+    <div id="logsTab" class="tab-content active">
+        <!-- Быстрые фильтры -->
+        <div class="quick-filters">
+            <input type="text" id="searchInput" placeholder="Поиск по URL, методу..." class="search-input">
+            <select id="methodFilter" class="filter-select">
+                <option value="">Все методы</option>
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+            </select>
+            <select id="statusFilter" class="filter-select">
+                <option value="">Все статусы</option>
+                <option value="2xx">2xx (Success)</option>
+                <option value="3xx">3xx (Redirect)</option>
+                <option value="4xx">4xx (Client Error)</option>
+                <option value="5xx">5xx (Server Error)</option>
+            </select>
+        </div>
+
+        <!-- Список логов -->
+        <div id="logsList" class="logs-list">
+            <div class="empty-state">
+                <span class="empty-icon">📭</span>
+                <p>Нет захваченных запросов</p>
+                <small>API запросы будут отображаться здесь</small>
+            </div>
+        </div>
+
+        <!-- Экспорт -->
+        <div class="export-section">
+            <button id="exportJsonBtn" class="btn btn-small">JSON</button>
+            <button id="exportHarBtn" class="btn btn-small">HAR</button>
+            <button id="exportCsvBtn" class="btn btn-small">CSV</button>
+            <button id="exportPostmanBtn" class="btn btn-small">Postman</button>
+        </div>
     </div>
 
-    <button id="toggleBtn">Включить запись</button>
+    <!-- Контент: вкладка "Статистика" -->
+    <div id="statsTab" class="tab-content">
+        <div class="stats-container">
+            <!-- Общая статистика -->
+            <div class="stats-group">
+                <h3 class="stats-title">Общая информация</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRequests">0</div>
+                        <div class="stat-label">Всего запросов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successRate">0%</div>
+                        <div class="stat-label">Успешных</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="errorRate">0%</div>
+                        <div class="stat-label">Ошибок</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgDuration">0ms</div>
+                        <div class="stat-label">Среднее время</div>
+                    </div>
+                </div>
+            </div>
 
-    <div class="info">
-      Записано событий: <span id="countLabel">0</span>
+            <!-- По типам API -->
+            <div class="stats-group">
+                <h3 class="stats-title">По типам API</h3>
+                <div id="apiTypesChart" class="chart"></div>
+            </div>
+
+            <!-- По методам -->
+            <div class="stats-group">
+                <h3 class="stats-title">По HTTP методам</h3>
+                <div id="methodsChart" class="chart"></div>
+            </div>
+
+            <!-- По статусам -->
+            <div class="stats-group">
+                <h3 class="stats-title">По статус-кодам</h3>
+                <div id="statusChart" class="chart"></div>
+            </div>
+
+            <!-- Самые медленные -->
+            <div class="stats-group">
+                <h3 class="stats-title">Самые медленные запросы</h3>
+                <div id="slowestRequests" class="list-stats"></div>
+            </div>
+
+            <!-- Топ доменов -->
+            <div class="stats-group">
+                <h3 class="stats-title">Топ доменов</h3>
+                <div id="topDomains" class="list-stats"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="buttons-row">
-      <button id="exportZipBtn">Экспорт ZIP</button>
-      <button id="exportJsonBtn">Экспорт JSON</button>
-      <button id="clearBtn">Очистить</button>
+    <!-- Контент: вкладка "Фильтры" -->
+    <div id="filtersTab" class="tab-content">
+        <div class="filters-container">
+            <!-- Типы API -->
+            <div class="filter-group">
+                <h3 class="filter-title">Типы API</h3>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filterFetch" checked>
+                        <span>Fetch</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filterXhr" checked>
+                        <span>XMLHttpRequest</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filterWebsocket" checked>
+                        <span>WebSocket</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filterEventSource" checked>
+                        <span>EventSource (SSE)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- URL паттерны -->
+            <div class="filter-group">
+                <h3 class="filter-title">Условия записи</h3>
+                <label class="input-label">
+                    URL паттерны (через запятую):
+                    <textarea id="urlPatterns" class="textarea" rows="2" placeholder="api.example.com, /api/v1/"></textarea>
+                </label>
+                <label class="input-label">
+                    Исключить паттерны:
+                    <textarea id="excludePatterns" class="textarea" rows="2" placeholder="analytics, tracking"></textarea>
+                </label>
+            </div>
+
+            <!-- Игнор-лист -->
+            <div class="filter-group">
+                <h3 class="filter-title">Игнор-лист доменов</h3>
+                <textarea id="ignoreList" class="textarea" rows="3" placeholder="google-analytics.com&#10;facebook.com/tr&#10;yandex.ru/metrika"></textarea>
+            </div>
+
+            <!-- Безопасность -->
+            <div class="filter-group">
+                <h3 class="filter-title">Безопасность и приватность</h3>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="hideTokens" checked>
+                        <span>Скрывать токены и пароли</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoCleanup">
+                        <span>Автоочистка старых логов</span>
+                    </label>
+                </div>
+                <label class="input-label" style="margin-top: 10px;">
+                    Максимум записей:
+                    <input type="number" id="maxRecords" class="input" value="1000" min="100" max="10000">
+                </label>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="filter-actions">
+                <button id="applyFiltersBtn" class="btn btn-primary">Применить фильтры</button>
+                <button id="resetFiltersBtn" class="btn btn-secondary">Сбросить</button>
+            </div>
+        </div>
     </div>
 
-    <details>
-      <summary>Просмотр последних логов</summary>
-      <textarea id="preview" readonly></textarea>
-    </details>
-
-    <footer class="copyright">
-      <p>© 2025 SinUP Agency</p>
-      <p><a href="https://github.com/SinUp-UA" target="_blank">GitHub</a></p>
-    </footer>
-  </div>
-
-  <script src="popup.js"></script>
+    <script src="popup.js"></script>
+    <script src="settings.js"></script>
+    <script src="analytics.js"></script>
 </body>
 </html>

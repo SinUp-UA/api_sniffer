@@ -32,7 +32,7 @@ window.addEventListener("message", (event) => {
   console.log('[API Sniffer Content] Event captured:', data.payload.apiType, data.payload.url);
 
   browserAPI.runtime.sendMessage({
-    type: "api_log",
+    action: "api_log",
     payload: data.payload
   }).catch(err => {
     console.error('[API Sniffer Content] Error sending message:', err);

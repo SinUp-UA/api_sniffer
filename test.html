@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Sniffer Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #da190b;
+        }
+        button.info {
+            background: #2196F3;
+        }
+        button.info:hover {
+            background: #0b7dda;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        h2 {
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 API Sniffer - Тестовая страница</h1>
+        
+        <div class="section">
+            <h2>1. Fetch API</h2>
+            <button onclick="testFetchGet()">GET запрос</button>
+            <button onclick="testFetchPost()">POST запрос</button>
+            <button onclick="testFetchError()">Ошибка 404</button>
+        </div>
+        
+        <div class="section">
+            <h2>2. XMLHttpRequest</h2>
+            <button onclick="testXhrGet()">XHR GET</button>
+            <button onclick="testXhrPost()">XHR POST</button>
+        </div>
+        
+        <div class="section">
+            <h2>3. WebSocket (эмуляция)</h2>
+            <button onclick="testWebSocket()" class="info">Подключиться к WebSocket</button>
+        </div>
+        
+        <div class="section">
+            <h2>4. Множественные запросы</h2>
+            <button onclick="testMultipleRequests()" class="danger">Отправить 10 запросов</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;">
+            <strong>Результат:</strong>
+            <div id="resultText"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(text) {
+            const result = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            resultText.textContent = text;
+            result.style.display = 'block';
+            setTimeout(() => {
+                result.style.display = 'none';
+            }, 3000);
+        }
+
+        // Fetch GET
+        async function testFetchGet() {
+            try {
+                const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+                const data = await response.json();
+                showResult('✅ Fetch GET успешен: ' + data.title);
+                console.log('Fetch GET:', data);
+            } catch (error) {
+                showResult('❌ Ошибка Fetch GET: ' + error.message);
+            }
+        }
+
+        // Fetch POST
+        async function testFetchPost() {
+            try {
+                const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: 'Test Post',
+                        body: 'This is a test',
+                        userId: 1
+                    })
+                });
+                const data = await response.json();
+                showResult('✅ Fetch POST успешен: ID ' + data.id);
+                console.log('Fetch POST:', data);
+            } catch (error) {
+                showResult('❌ Ошибка Fetch POST: ' + error.message);
+            }
+        }
+
+        // Fetch Error
+        async function testFetchError() {
+            try {
+                const response = await fetch('https://jsonplaceholder.typicode.com/posts/999999');
+                showResult('⚠️ Fetch вернул статус: ' + response.status);
+                console.log('Fetch Error:', response.status);
+            } catch (error) {
+                showResult('❌ Ошибка Fetch: ' + error.message);
+            }
+        }
+
+        // XHR GET
+        function testXhrGet() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://jsonplaceholder.typicode.com/users/1');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    showResult('✅ XHR GET успешен: ' + data.name);
+                    console.log('XHR GET:', data);
+                }
+            };
+            xhr.onerror = function() {
+                showResult('❌ Ошибка XHR GET');
+            };
+            xhr.send();
+        }
+
+        // XHR POST
+        function testXhrPost() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://jsonplaceholder.typicode.com/users');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status === 201 || xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    showResult('✅ XHR POST успешен: ID ' + data.id);
+                    console.log('XHR POST:', data);
+                }
+            };
+            xhr.onerror = function() {
+                showResult('❌ Ошибка XHR POST');
+            };
+            xhr.send(JSON.stringify({
+                name: 'Test User',
+                email: 'test@example.com'
+            }));
+        }
+
+        // WebSocket (будет показывать ошибку, но перехватится)
+        function testWebSocket() {
+            try {
+                // Используем публичный WebSocket echo сервер
+                const ws = new WebSocket('wss://echo.websocket.org/');
+                
+                ws.onopen = function() {
+                    showResult('✅ WebSocket подключен');
+                    ws.send('Test message from API Sniffer');
+                };
+                
+                ws.onmessage = function(event) {
+                    showResult('✅ WebSocket сообщение: ' + event.data);
+                    ws.close();
+                };
+                
+                ws.onerror = function() {
+                    showResult('⚠️ WebSocket ошибка (но перехвачена)');
+                };
+                
+                ws.onclose = function() {
+                    console.log('WebSocket закрыт');
+                };
+            } catch (error) {
+                showResult('❌ Ошибка WebSocket: ' + error.message);
+            }
+        }
+
+        // Multiple requests
+        async function testMultipleRequests() {
+            showResult('🚀 Отправка 10 запросов...');
+            const promises = [];
+            
+            for (let i = 1; i <= 10; i++) {
+                promises.push(
+                    fetch(`https://jsonplaceholder.typicode.com/posts/${i}`)
+                        .then(r => r.json())
+                );
+            }
+            
+            try {
+                await Promise.all(promises);
+                showResult('✅ Все 10 запросов выполнены!');
+                console.log('Multiple requests completed');
+            } catch (error) {
+                showResult('❌ Ошибка множественных запросов');
+            }
+        }
+
+        // Автоматический запрос при загрузке
+        console.log('🔍 API Sniffer Test Page загружена');
+        console.log('Откройте расширение API Sniffer для просмотра перехваченных запросов');
+    </script>
+</body>
+</html>
