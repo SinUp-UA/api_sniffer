@@ -308,34 +308,53 @@ const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
 ### Автоматическая генерация (рекомендуется)
 
-Используйте PowerShell скрипт для автоматического создания всех PNG иконок:
+Используйте PowerShell скрипт для автоматического создания всех PNG иконок из исходного изображения `sniffer.png`:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File create-icons.ps1
 ```
 
-Скрипт автоматически создаст все необходимые PNG файлы (16x16, 32x32, 48x48, 128x128) в папках `chrome/icons/`, `firefox/icons/` и `icons/`.
+Скрипт:
+- Использует `sniffer.png` (1024x1024) как исходное изображение
+- Автоматически ресайзит в высоком качестве (HighQualityBicubic)
+- Создаст все необходимые PNG файлы (16x16, 32x32, 48x48, 128x128)
+- Сохранит иконки в папки `chrome/icons/`, `firefox/icons/` и `icons/`
+
+**Результат:**
+- 16.png - ~896 байт
+- 32.png - ~2.2 KB
+- 48.png - ~4 KB
+- 128.png - ~21 KB
 
 ### Альтернативные методы
 
-#### Метод 1: Использование generate-icons.html
+#### Метод 1: Замена исходного изображения
+
+Если хотите использовать свое изображение:
+1. Замените `sniffer.png` на свое изображение (рекомендуется 1024x1024 или больше)
+2. Запустите скрипт `create-icons.ps1`
+3. Все иконки будут пересозданы из вашего изображения
+
+#### Метод 2: Использование generate-icons.html
 1. Откройте файл `generate-icons.html` в браузере
 2. Файлы 16.png, 32.png, 48.png, 128.png автоматически загрузятся
 3. Переместите их в папки `chrome/icons/` и `firefox/icons/`
 
-#### Метод 2: Онлайн конвертер
-1. Откройте файл `icons/icon.svg` в любом SVG редакторе или онлайн конвертере
+**Примечание:** Этот метод использует встроенный SVG и создает простые иконки с текстом "API".
+
+#### Метод 3: Онлайн конвертер
+1. Откройте файл `sniffer.png` в любом графическом редакторе или онлайн конвертере
 2. Экспортируйте в размерах: 16x16, 32x32, 48x48, 128x128 пикселей
 3. Сохраните как 16.png, 32.png, 48.png, 128.png
 4. Скопируйте в папки `chrome/icons/` и `firefox/icons/`
 
-#### Метод 3: Использование ImageMagick (если установлен)
+#### Метод 4: Использование ImageMagick (если установлен)
 ```bash
 cd icons
-magick icon.svg -resize 16x16 ../chrome/icons/16.png
-magick icon.svg -resize 32x32 ../chrome/icons/32.png
-magick icon.svg -resize 48x48 ../chrome/icons/48.png
-magick icon.svg -resize 128x128 ../chrome/icons/128.png
+magick ../sniffer.png -resize 16x16 ../chrome/icons/16.png
+magick ../sniffer.png -resize 32x32 ../chrome/icons/32.png
+magick ../sniffer.png -resize 48x48 ../chrome/icons/48.png
+magick ../sniffer.png -resize 128x128 ../chrome/icons/128.png
 # Повторить для firefox/icons/
 ```
 
@@ -347,7 +366,13 @@ magick icon.svg -resize 128x128 ../chrome/icons/128.png
 Get-ChildItem chrome\icons\*.png | Select-Object Name, Length
 ```
 
-Правильные размеры: **300-900 байт** для каждого файла. Если размер ~8 байт - файлы повреждены!
+**Правильные размеры (при использовании sniffer.png):**
+- 16.png: ~900 байт
+- 32.png: ~2-3 KB  
+- 48.png: ~4-5 KB
+- 128.png: ~20-25 KB
+
+⚠️ Если размер ~8 байт - файлы повреждены и нужно перегенерировать!
 
 ## � Автообновление
 
