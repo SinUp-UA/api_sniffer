@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>API Sniffer</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>API Sniffer</h1>
+
+    <div class="status">
+      Статус: <span id="statusLabel">—</span>
+    </div>
+
+    <button id="toggleBtn">Включить запись</button>
+
+    <div class="info">
+      Записано событий: <span id="countLabel">0</span>
+    </div>
+
+    <div class="buttons-row">
+      <button id="exportZipBtn">Экспорт ZIP</button>
+      <button id="exportJsonBtn">Экспорт JSON</button>
+      <button id="clearBtn">Очистить</button>
+    </div>
+
+    <details>
+      <summary>Просмотр последних логов</summary>
+      <textarea id="preview" readonly></textarea>
+    </details>
+
+    <footer class="copyright">
+      <p>© 2025 SinUP Agency</p>
+      <p><a href="https://github.com/SinUp-UA" target="_blank">GitHub</a></p>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

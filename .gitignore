@@ -1,0 +1,30 @@
+# Файлы сборки и временные
+*.crx
+*.xpi
+*.zip
+*.pem
+
+# Node modules (если будут использоваться)
+node_modules/
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Временные файлы
+*.log
+*.tmp
+.cache/
+
+# Локальные настройки
+.env
+.env.local

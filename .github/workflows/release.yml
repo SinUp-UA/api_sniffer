@@ -1,0 +1,77 @@
+name: Release Extension
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Chrome package
+        run: |
+          cd chrome
+          zip -r ../api-sniffer-chrome-${{ steps.get_version.outputs.VERSION }}.zip .
+          cd ..
+
+      - name: Create Firefox package
+        run: |
+          cd firefox
+          zip -r ../api-sniffer-firefox-${{ steps.get_version.outputs.VERSION }}.xpi .
+          cd ..
+
+      - name: Update updates.xml
+        run: |
+          sed -i "s/version='[0-9.]*'/version='${{ steps.get_version.outputs.VERSION }}'/" updates.xml
+          sed -i "s/v[0-9.]*\//v${{ steps.get_version.outputs.VERSION }}\//" updates.xml
+
+      - name: Update updates.json
+        run: |
+          sed -i "s/\"version\": \"[0-9.]*\"/\"version\": \"${{ steps.get_version.outputs.VERSION }}\"/" updates.json
+          sed -i "s/v[0-9.]*\//v${{ steps.get_version.outputs.VERSION }}\//" updates.json
+
+      - name: Commit updated files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add updates.xml updates.json
+          git commit -m "Update version to ${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
+          git push origin HEAD:main || echo "No changes to push"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            api-sniffer-chrome-${{ steps.get_version.outputs.VERSION }}.zip
+            api-sniffer-firefox-${{ steps.get_version.outputs.VERSION }}.xpi
+          body: |
+            ## Universal API Sniffer v${{ steps.get_version.outputs.VERSION }}
+            
+            ### 📦 Установка
+            
+            **Chrome/Edge/Opera/Brave:**
+            1. Скачайте `api-sniffer-chrome-${{ steps.get_version.outputs.VERSION }}.zip`
+            2. Распакуйте архив
+            3. Загрузите в браузер через chrome://extensions/
+            
+            **Firefox:**
+            1. Скачайте `api-sniffer-firefox-${{ steps.get_version.outputs.VERSION }}.xpi`
+            2. Откройте about:addons
+            3. Установите из файла
+            
+            ### 🔄 Автообновление
+            
+            Расширение будет автоматически проверять обновления через GitHub Releases.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

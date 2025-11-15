@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Icon Generator</title>
+</head>
+<body>
+    <h1>Icon Generator for API Sniffer</h1>
+    <p>Downloading icons...</p>
+    <script>
+        function createIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#2563eb';
+            ctx.beginPath();
+            const radius = size * 0.125;
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw network icon
+            const scale = size / 128;
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            // Hexagon outline
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4 * scale;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            const hexPoints = [
+                [32*scale, 40*scale], [64*scale, 32*scale], [96*scale, 40*scale],
+                [96*scale, 80*scale], [64*scale, 96*scale], [32*scale, 80*scale]
+            ];
+            ctx.moveTo(hexPoints[0][0], hexPoints[0][1]);
+            for (let i = 1; i < hexPoints.length; i++) {
+                ctx.lineTo(hexPoints[i][0], hexPoints[i][1]);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Nodes
+            const nodeRadius = 6 * scale;
+            ctx.fillStyle = '#fff';
+            const nodes = [
+                [64*scale, 48*scale],
+                [48*scale, 64*scale],
+                [80*scale, 64*scale],
+                [64*scale, 80*scale]
+            ];
+            
+            // Lines between nodes
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3 * scale;
+            ctx.beginPath();
+            ctx.moveTo(nodes[0][0], nodes[0][1]);
+            ctx.lineTo(nodes[1][0], nodes[1][1]);
+            ctx.moveTo(nodes[0][0], nodes[0][1]);
+            ctx.lineTo(nodes[2][0], nodes[2][1]);
+            ctx.moveTo(nodes[1][0], nodes[1][1]);
+            ctx.lineTo(nodes[3][0], nodes[3][1]);
+            ctx.moveTo(nodes[2][0], nodes[2][1]);
+            ctx.lineTo(nodes[3][0], nodes[3][1]);
+            ctx.stroke();
+            
+            // Draw nodes
+            nodes.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Text "API"
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${16 * scale}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('API', centerX, 115 * scale);
+            
+            return canvas;
+        }
+        
+        function downloadIcon(canvas, filename) {
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        // Generate all sizes
+        [16, 32, 48, 128].forEach(size => {
+            const canvas = createIcon(size);
+            downloadIcon(canvas, `${size}.png`);
+        });
+        
+        document.body.innerHTML += '<p>Icons generated! Check your downloads folder.</p>';
+    </script>
+</body>
+</html>

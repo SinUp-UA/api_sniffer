@@ -1,0 +1,40 @@
+{
+  "manifest_version": 2,
+  "name": "Universal API Sniffer",
+  "version": "1.0.0",
+  "description": "Перехват fetch/XHR/WebSocket/SSE на любых сайтах и экспорт логов.",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_title": "API Sniffer",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "downloads",
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": ["sniffer.js"],
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "api-sniffer@universal.extension",
+      "strict_min_version": "57.0",
+      "update_url": "https://raw.githubusercontent.com/SinUp-UA/api_sniffer/main/updates.json"
+    }
+  }
+}
