@@ -20,24 +20,26 @@ jobs:
       - name: Create Chrome package
         run: |
           cd chrome
-          zip -r ../api-sniffer-chrome-${{ steps.get_version.outputs.VERSION }}.zip .
+          zip -r ../Universal-API-Sniffer-Chrome-v${{ steps.get_version.outputs.VERSION }}.zip .
           cd ..
 
       - name: Create Firefox package
         run: |
           cd firefox
-          zip -r ../api-sniffer-firefox-${{ steps.get_version.outputs.VERSION }}.xpi .
+          zip -r ../Universal-API-Sniffer-Firefox-v${{ steps.get_version.outputs.VERSION }}.xpi .
           cd ..
 
-      - name: Update updates.xml
+      - name: Update updates.xml for Chrome
         run: |
           sed -i "s/version='[0-9.]*'/version='${{ steps.get_version.outputs.VERSION }}'/" updates.xml
-          sed -i "s/v[0-9.]*\//v${{ steps.get_version.outputs.VERSION }}\//" updates.xml
+          sed -i "s/chrome-v[0-9.]*\//chrome-v${{ steps.get_version.outputs.VERSION }}\//" updates.xml
+          sed -i "s/Chrome-v[0-9.]*.zip/Chrome-v${{ steps.get_version.outputs.VERSION }}.zip/" updates.xml
 
-      - name: Update updates.json
+      - name: Update updates.json for Firefox
         run: |
           sed -i "s/\"version\": \"[0-9.]*\"/\"version\": \"${{ steps.get_version.outputs.VERSION }}\"/" updates.json
-          sed -i "s/v[0-9.]*\//v${{ steps.get_version.outputs.VERSION }}\//" updates.json
+          sed -i "s/firefox-v[0-9.]*\//firefox-v${{ steps.get_version.outputs.VERSION }}\//" updates.json
+          sed -i "s/Firefox-v[0-9.]*.xpi/Firefox-v${{ steps.get_version.outputs.VERSION }}.xpi/" updates.json
 
       - name: Commit updated files
         run: |
@@ -47,30 +49,83 @@ jobs:
           git commit -m "Update version to ${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
           git push origin HEAD:main || echo "No changes to push"
 
-      - name: Create Release
+      - name: Create Chrome Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            api-sniffer-chrome-${{ steps.get_version.outputs.VERSION }}.zip
-            api-sniffer-firefox-${{ steps.get_version.outputs.VERSION }}.xpi
+          tag_name: chrome-v${{ steps.get_version.outputs.VERSION }}
+          name: "Chrome/Edge/Opera/Brave v${{ steps.get_version.outputs.VERSION }}"
+          files: Universal-API-Sniffer-Chrome-v${{ steps.get_version.outputs.VERSION }}.zip
           body: |
-            ## Universal API Sniffer v${{ steps.get_version.outputs.VERSION }}
+            ## 🌐 Universal API Sniffer для Chrome/Edge/Opera/Brave
+            
+            **Версия**: ${{ steps.get_version.outputs.VERSION }}
             
             ### 📦 Установка
             
-            **Chrome/Edge/Opera/Brave:**
-            1. Скачайте `api-sniffer-chrome-${{ steps.get_version.outputs.VERSION }}.zip`
-            2. Распакуйте архив
-            3. Загрузите в браузер через chrome://extensions/
+            1. Скачайте `Universal-API-Sniffer-Chrome-v${{ steps.get_version.outputs.VERSION }}.zip`
+            2. Распакуйте архив в отдельную папку
+            3. Откройте браузер и перейдите:
+               - Chrome: `chrome://extensions/`
+               - Edge: `edge://extensions/`
+               - Opera: `opera://extensions/`
+               - Brave: `brave://extensions/`
+            4. Включите **"Режим разработчика"**
+            5. Нажмите **"Загрузить распакованное расширение"**
+            6. Выберите распакованную папку
             
-            **Firefox:**
-            1. Скачайте `api-sniffer-firefox-${{ steps.get_version.outputs.VERSION }}.xpi`
-            2. Откройте about:addons
-            3. Установите из файла
+            ### ✨ Возможности
+            
+            - ✅ Перехват fetch/XHR/WebSocket/SSE
+            - ✅ Экспорт в JSON и ZIP (с HAR)
+            - ✅ Предпросмотр логов в реальном времени
+            - ✅ Автообновление через GitHub
             
             ### 🔄 Автообновление
             
-            Расширение будет автоматически проверять обновления через GitHub Releases.
+            Расширение автоматически проверяет обновления каждые 5 часов.
+            
+            ---
+            
+            © 2025 SinUP Agency | [GitHub](https://github.com/SinUp-UA/api_sniffer)
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Firefox Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: firefox-v${{ steps.get_version.outputs.VERSION }}
+          name: "Firefox v${{ steps.get_version.outputs.VERSION }}"
+          files: Universal-API-Sniffer-Firefox-v${{ steps.get_version.outputs.VERSION }}.xpi
+          body: |
+            ## 🦊 Universal API Sniffer для Firefox
+            
+            **Версия**: ${{ steps.get_version.outputs.VERSION }}
+            
+            ### 📦 Установка
+            
+            1. Скачайте `Universal-API-Sniffer-Firefox-v${{ steps.get_version.outputs.VERSION }}.xpi`
+            2. Откройте Firefox и перейдите: `about:debugging#/runtime/this-firefox`
+            3. Нажмите **"Загрузить временное дополнение..."**
+            4. Выберите скачанный файл `.xpi`
+            
+            **⚠️ Примечание**: Временное расширение работает до перезапуска браузера.
+            
+            ### ✨ Возможности
+            
+            - ✅ Перехват fetch/XHR/WebSocket/SSE
+            - ✅ Экспорт в JSON и ZIP (с HAR)
+            - ✅ Предпросмотр логов в реальном времени
+            - ✅ Автообновление через GitHub
+            
+            ### 🔄 Автообновление
+            
+            Расширение автоматически проверяет обновления каждые 24 часа.
+            
+            ---
+            
+            © 2025 SinUP Agency | [GitHub](https://github.com/SinUp-UA/api_sniffer)
           draft: false
           prerelease: false
         env:

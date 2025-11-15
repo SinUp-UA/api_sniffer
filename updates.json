@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "1.0.0",
-          "update_link": "https://github.com/SinUp-UA/api_sniffer/releases/download/v1.0.0/api-sniffer-firefox.xpi"
+          "update_link": "https://github.com/SinUp-UA/api_sniffer/releases/download/firefox-v1.0.0/Universal-API-Sniffer-Firefox-v1.0.0.xpi"
         }
       ]
     }
