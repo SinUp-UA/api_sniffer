@@ -31,3 +31,7 @@ desktop.ini
 
 # Документы для внутреннего использования
 UPDATES.md
+
+# Исходные файлы для разработки
+create-icons.ps1
+sniffer.png
