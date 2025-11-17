@@ -169,6 +169,11 @@
   if (typeof OriginalXHR === "function") {
     function SnifferXHR() {
       const xhr = new OriginalXHR();
+      
+      // Если запись не активна, возвращаем чистый XHR без перехвата
+      if (!shouldRecord()) {
+        return xhr;
+      }
 
       let url = "";
       let method = "";
@@ -192,6 +197,11 @@
 
       const originalSend = xhr.send;
       xhr.send = function (body) {
+        // Повторная проверка при отправке
+        if (!shouldRecord()) {
+          return originalSend.call(xhr, body);
+        }
+        
         timestamp = nowIso();
         startTime = performance.now();
         requestBody = safeSerializeBody(body);
