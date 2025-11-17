@@ -2,16 +2,28 @@
 // Универсальная обёртка для поддержки всех браузеров
 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
+// Флаг для отслеживания инвалидации контекста (логируем только один раз)
+let contextInvalidated = false;
+
 console.log('[API Sniffer Content] Script loaded on:', window.location.href);
+
+// Проверка валидности контекста расширения
+function isContextValid() {
+  if (!browserAPI.runtime?.id) {
+    if (!contextInvalidated) {
+      contextInvalidated = true;
+      console.info('[API Sniffer Content] Extension context invalidated - this is normal after extension reload');
+    }
+    return false;
+  }
+  return true;
+}
 
 // Функция для получения и отправки состояния записи в sniffer.js
 async function syncSnifferState() {
+  if (!isContextValid()) return;
+  
   try {
-    if (!browserAPI.runtime?.id) {
-      console.warn('[API Sniffer Content] Extension context invalidated');
-      return;
-    }
-
     const response = await browserAPI.runtime.sendMessage({ action: "get_state" });
     
     // Отправляем состояние в sniffer.js через postMessage
@@ -23,9 +35,7 @@ async function syncSnifferState() {
     
     console.log('[API Sniffer Content] State synced to sniffer.js:', response);
   } catch (err) {
-    if (err.message?.includes('Extension context invalidated')) {
-      console.warn('[API Sniffer Content] Extension context invalidated during state sync');
-    } else {
+    if (!err.message?.includes('Extension context invalidated')) {
       console.error('[API Sniffer Content] Error syncing state:', err);
     }
   }
@@ -33,13 +43,9 @@ async function syncSnifferState() {
 
 // Инжектим sniffer.js в страницу, чтобы иметь доступ к window.fetch/XHR/WebSocket/EventSource
 (function injectSniffer() {
+  if (!isContextValid()) return;
+  
   try {
-    // Проверка валидности контекста перед использованием runtime API
-    if (!browserAPI.runtime?.id) {
-      console.warn('[API Sniffer Content] Extension context invalidated, cannot inject sniffer.js');
-      return;
-    }
-
     const script = document.createElement("script");
     script.src = browserAPI.runtime.getURL("sniffer.js");
     script.async = false;
@@ -55,10 +61,7 @@ async function syncSnifferState() {
     };
     (document.head || document.documentElement).prepend(script);
   } catch (e) {
-    // Тихо игнорировать ошибки контекста расширения
-    if (e.message?.includes('Extension context invalidated')) {
-      console.warn('[API Sniffer Content] Extension context invalidated during injection');
-    } else {
+    if (!e.message?.includes('Extension context invalidated')) {
       console.error('[API Sniffer Content] Error injecting sniffer.js:', e);
     }
   }
@@ -79,28 +82,25 @@ window.addEventListener("message", (event) => {
   // Обработка логов от sniffer.js
   if (data.__sniffer__ !== true) return;
 
+  // Проверка валидности контекста расширения
+  if (!isContextValid()) return;
+
   console.log('[API Sniffer Content] Event captured:', data.payload.apiType, data.payload.url);
 
-  // Проверка валидности контекста расширения
   try {
-    if (!browserAPI.runtime?.id) {
-      console.warn('[API Sniffer Content] Extension context invalidated, stopping message forwarding');
-      return;
-    }
-
     browserAPI.runtime.sendMessage({
       action: "api_log",
       payload: data.payload
     }).catch(err => {
-      // Игнорировать ошибки если контекст инвалидирован
-      if (err.message?.includes('Extension context invalidated')) {
-        console.warn('[API Sniffer Content] Extension context invalidated');
-      } else {
+      // Тихо игнорировать ошибки инвалидации контекста
+      if (!err.message?.includes('Extension context invalidated')) {
         console.error('[API Sniffer Content] Error sending message:', err);
       }
     });
   } catch (err) {
-    console.warn('[API Sniffer Content] Cannot access extension context:', err.message);
+    if (!err.message?.includes('Extension context invalidated')) {
+      console.warn('[API Sniffer Content] Cannot access extension context:', err.message);
+    }
   }
 });
 
