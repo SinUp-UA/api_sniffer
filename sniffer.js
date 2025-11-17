@@ -8,6 +8,10 @@
   }
   window.__UNIVERSAL_API_SNIFFER_INSTALLED__ = true;
 
+  // Глобальное состояние записи
+  window.__SNIFFER_RECORDING__ = false;
+  window.__SNIFFER_PAUSED__ = false;
+
   console.log('[API Sniffer] Installing hooks on:', window.location.href);
 
   function nowIso() {
@@ -46,7 +50,17 @@
     return { type: typeof body, value: String(body) };
   }
 
+  // Проверка: должны ли мы записывать события
+  function shouldRecord() {
+    return window.__SNIFFER_RECORDING__ && !window.__SNIFFER_PAUSED__;
+  }
+
   function postLog(payload) {
+    // Не отправляем логи если запись выключена или на паузе
+    if (!shouldRecord()) {
+      return;
+    }
+    
     console.log('[API Sniffer] Posting log:', payload.apiType, payload.url);
     try {
       window.postMessage(
@@ -351,4 +365,19 @@
   }
 
   console.log('[API Sniffer] All hooks installed successfully! fetch:', !!window.fetch, 'XMLHttpRequest:', !!window.XMLHttpRequest, 'WebSocket:', !!window.WebSocket, 'EventSource:', !!window.EventSource);
+
+  // Слушаем изменения состояния записи
+  window.addEventListener('message', (event) => {
+    if (event.source !== window) return;
+    const data = event.data;
+    
+    if (data && data.__sniffer_state_update__) {
+      window.__SNIFFER_RECORDING__ = data.recording;
+      window.__SNIFFER_PAUSED__ = data.paused;
+      console.log('[API Sniffer] State updated: recording =', data.recording, ', paused =', data.paused);
+    }
+  });
+
+  // Запросить начальное состояние
+  window.postMessage({ __sniffer_request_state__: true }, "*");
 })();

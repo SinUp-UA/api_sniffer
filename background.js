@@ -8,6 +8,27 @@ let logs = [];
 let settings = null;
 let autoCleanupInterval = null;
 
+// Функция для уведомления всех вкладок об изменении состояния
+async function notifyAllTabs(state) {
+  try {
+    const tabs = await browserAPI.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.id) {
+        browserAPI.tabs.sendMessage(tab.id, {
+          action: "state_changed",
+          recording: state.recording,
+          paused: state.paused
+        }).catch(err => {
+          // Игнорируем ошибки для вкладок где content script не загружен
+          console.log('[API Sniffer Enhanced] Could not notify tab', tab.id, ':', err.message);
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[API Sniffer Enhanced] Error notifying tabs:', err);
+  }
+}
+
 // Получение настроек по умолчанию (упрощенная версия из settings.js)
 function getDefaultSettings() {
   return {
@@ -229,6 +250,10 @@ async function handleMessage(message, sender, sendResponse) {
     recording = !!message.value;
     await browserAPI.storage.local.set({ recording });
     console.log('[API Sniffer Enhanced] Recording:', recording);
+    
+    // Уведомляем все вкладки об изменении состояния
+    notifyAllTabs({ recording, paused });
+    
     sendResponse({ recording });
     return;
   }
@@ -238,6 +263,10 @@ async function handleMessage(message, sender, sendResponse) {
     paused = message.paused !== undefined ? message.paused : !!message.value;
     await browserAPI.storage.local.set({ paused });
     console.log('[API Sniffer Enhanced] Paused:', paused);
+    
+    // Уведомляем все вкладки об изменении состояния
+    notifyAllTabs({ recording, paused });
+    
     sendResponse({ paused });
     return;
   }
